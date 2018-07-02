@@ -75,43 +75,43 @@ func (t *Test) AttestGreaterThan(expected, variable interface{}) {
 		t.NativeTest.Fail()
 	case int:
 		t.Attest(
-			variable.(int) < expected.(int),
+			variable.(int) > expected.(int),
 			"Value (%#v) was less than expected (%#v).",
 			variable,
 			expected)
 	case int8:
 		t.Attest(
-			variable.(int8) < expected.(int8),
+			variable.(int8) > expected.(int8),
 			"Value (%#v) was less than expected (%#v).",
 			variable,
 			expected)
 	case int16:
 		t.Attest(
-			variable.(int16) < expected.(int16),
+			variable.(int16) > expected.(int16),
 			"Value (%#v) was less than expected (%#v).",
 			variable,
 			expected)
 	case int32:
 		t.Attest(
-			variable.(int32) < expected.(int32),
+			variable.(int32) > expected.(int32),
 			"Value (%#v) was less than expected (%#v).",
 			variable,
 			expected)
 	case int64:
 		t.Attest(
-			variable.(int64) < expected.(int64),
+			variable.(int64) > expected.(int64),
 			"Value (%#v) was less than expected (%#v).",
 			variable,
 			expected)
 	case float32:
 		t.Attest(
-			variable.(float32) < expected.(float32),
+			variable.(float32) > expected.(float32),
 			"Value (%#v) was less than expected (%#v).",
 			variable,
 			expected)
 	case float64:
 		t.Attest(
-			variable.(float64) < expected.(float64),
+			variable.(float64) > expected.(float64),
 			"Value (%#v) was less than expected (%#v).",
 			variable,
 			expected)

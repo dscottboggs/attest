@@ -31,13 +31,14 @@ func TestAttestNotNil(t *testing.T) {
 }
 func TestAttestGreaterThan(t *testing.T) {
 	test := Test{t}
-	test.AttestGreaterThan(2, 1)
-	test.AttestGreaterThan(2.5, 1.3)
-	test.AttestGreaterThan(int8(2), int8(1))
-	test.AttestGreaterThan(int16(2), int16(1))
-	test.AttestGreaterThan(int32(2), int32(1))
-	test.AttestGreaterThan(int64(2), int64(1))
-	test.AttestGreaterThan(float32(2.1), float32(1.3))
+	test.AttestGreaterThan(1, 2)
+	test.AttestGreaterThan(1.3, 2.5)
+	test.AttestGreaterThan(int8(1), int8(2))
+	test.AttestGreaterThan(int16(1), int16(2))
+	test.AttestGreaterThan(int32(1), int32(2))
+	test.AttestGreaterThan(int64(1), int64(2))
+	test.AttestGreaterThan(float32(1.3), float32(2.1))
+	test.AttestGreaterThan(float64(1.3), float64(2.1))
 }
 func TestAttestPositive(t *testing.T) {
 	test := Test{t}
