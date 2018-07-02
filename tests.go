@@ -120,6 +120,62 @@ func (t *Test) AttestGreaterThan(expected, variable interface{}) {
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
+// AttestLessThan -- log a message and fail if variable is negative.
+func (t *Test) AttestLessThan(expected, variable interface{}) {
+	switch variable.(type) {
+	default:
+		log.Printf(
+			"Can't check value of %#v: check isn't implemented for type %T",
+			variable,
+			variable)
+		t.NativeTest.Fail()
+	case int:
+		t.Attest(
+			variable.(int) < expected.(int),
+			"Value (%#v) was not less than expected (%#v).",
+			variable,
+			expected)
+	case int8:
+		t.Attest(
+			variable.(int8) < expected.(int8),
+			"Value (%#v) was not less than expected (%#v).",
+			variable,
+			expected)
+	case int16:
+		t.Attest(
+			variable.(int16) < expected.(int16),
+			"Value (%#v) was not less than expected (%#v).",
+			variable,
+			expected)
+	case int32:
+		t.Attest(
+			variable.(int32) < expected.(int32),
+			"Value (%#v) was not less than expected (%#v).",
+			variable,
+			expected)
+	case int64:
+		t.Attest(
+			variable.(int64) < expected.(int64),
+			"Value (%#v) was not less than expected (%#v).",
+			variable,
+			expected)
+	case float32:
+		t.Attest(
+			variable.(float32) < expected.(float32),
+			"Value (%#v) was not less than expected (%#v).",
+			variable,
+			expected)
+	case float64:
+		t.Attest(
+			variable.(float64) < expected.(float64),
+			"Value (%#v) was not less than expected (%#v).",
+			variable,
+			expected)
+	}
+	// can't use > on complex numbers for some reason.
+	// FIXME: implement GT/LT for complex64 and complex128
+}
+
 // AttestPositive -- log a message and fail if variable is negative.
 func (t *Test) AttestPositive(variable interface{}) {
 	switch variable.(type) {
@@ -164,6 +220,56 @@ func (t *Test) AttestPositive(variable interface{}) {
 		t.Attest(
 			variable.(float64) > 0,
 			"Value (%#v) was not positive.",
+			variable)
+	}
+	// can't use > on complex numbers for some reason.
+	// FIXME: implement GT/LT for complex64 and complex128
+}
+
+// AttestNegative -- log a message and fail if variable is negative.
+func (t *Test) AttestNegative(variable interface{}) {
+	switch variable.(type) {
+	default:
+		log.Printf(
+			"Can't check that %#v is negative: check isn't implemented for "+
+				"type %T",
+			variable,
+			variable)
+		t.NativeTest.Fail()
+	case int:
+		t.Attest(
+			variable.(int) < 0,
+			"Value (%#v) was not negative.",
+			variable)
+	case int8:
+		t.Attest(
+			variable.(int8) < 0,
+			"Value (%#v) was not negative.",
+			variable)
+	case int16:
+		t.Attest(
+			variable.(int16) < 0,
+			"Value (%#v) was not negative.",
+			variable)
+	case int32:
+		t.Attest(
+			variable.(int32) < 0,
+			"Value (%#v) was not negative.",
+			variable)
+	case int64:
+		t.Attest(
+			variable.(int64) < 0,
+			"Value (%#v) was not negative.",
+			variable)
+	case float32:
+		t.Attest(
+			variable.(float32) < 0,
+			"Value (%#v) was not negative.",
+			variable)
+	case float64:
+		t.Attest(
+			variable.(float64) < 0,
+			"Value (%#v) was not negative.",
 			variable)
 	}
 	// can't use > on complex numbers for some reason.

@@ -50,3 +50,24 @@ func TestAttestPositive(t *testing.T) {
 	test.AttestPositive(int64(2))
 	test.AttestPositive(float32(2.1))
 }
+func TestAttestNegative(t *testing.T) {
+	test := Test{t}
+	test.AttestNegative(-2)
+	test.AttestNegative(-2.5)
+	test.AttestNegative(int8(-2))
+	test.AttestNegative(int16(-2))
+	test.AttestNegative(int32(-2))
+	test.AttestNegative(int64(-2))
+	test.AttestNegative(float32(-2.1))
+}
+func TestAttestLessThan(t *testing.T) {
+	test := Test{t}
+	test.AttestLessThan(2, 1)
+	test.AttestLessThan(2.5, 1.3)
+	test.AttestLessThan(int8(2), int8(1))
+	test.AttestLessThan(int16(2), int16(1))
+	test.AttestLessThan(int32(2), int32(1))
+	test.AttestLessThan(int64(2), int64(1))
+	test.AttestLessThan(float32(2.1), float32(1.3))
+	test.AttestLessThan(float64(2.1), float64(1.3))
+}
