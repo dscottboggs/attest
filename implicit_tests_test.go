@@ -1,6 +1,7 @@
 package attest
 
 import (
+	"fmt"
 	"log"
 	"testing"
 )
@@ -70,4 +71,26 @@ func TestAttestLessThan(t *testing.T) {
 	test.AttestLessThan(int64(2), int64(1))
 	test.AttestLessThan(float32(2.1), float32(1.3))
 	test.AttestLessThan(float64(2.1), float64(1.3))
+}
+
+func TestAttestPanics(t *testing.T) {
+	test := Test{t}
+	test.AttestPanics(func(a ...interface{}) { panic(a[0].(string)) }, "test panic")
+	defer func() {
+		r := recover()
+		test.Attest(r == nil, "Printing a word caused a panic.")
+	}()
+	fmt.Println("Test passed.")
+}
+
+func TestAttestNoPanic(t *testing.T) {
+	test := Test{t}
+	test.AttestNoPanic(
+		func(a ...interface{}) { fmt.Printf(a[0].(string)) },
+		"Test function shouldn't panic.")
+	defer func() {
+		r := recover()
+		test.Attest(r != nil, "Test error function didn't panic!")
+	}()
+	panic("test panic")
 }
