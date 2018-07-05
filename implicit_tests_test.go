@@ -9,11 +9,11 @@ func TestAttest(t *testing.T) {
 	test := Test{t}
 	test.Attest(true, "attest.Test.Attest has failed an implicit test.")
 }
-func TestAttestEquals(t *testing.T) {
+func TestEquals(t *testing.T) {
 	test := Test{t}
-	test.AttestEquals(
-		"attest.Test.AttestEquals has failed an implicit test.",
-		"attest.Test.AttestEquals has failed an implicit test.")
+	test.Equals(
+		"attest.Test.Equals has failed an implicit test.",
+		"attest.Test.Equals has failed an implicit test.")
 }
 func TestAttestOrDo(t *testing.T) {
 	test := Test{t}
@@ -21,67 +21,81 @@ func TestAttestOrDo(t *testing.T) {
 		log.Printf("attest.Test.AttestOrDo has failed an implicit test")
 	})
 }
-func TestAttestNil(t *testing.T) {
+func TestNil(t *testing.T) {
 	test := Test{t}
-	test.AttestNil(nil)
+	test.Nil(nil)
 }
-func TestAttestNotNil(t *testing.T) {
+func TestNotNil(t *testing.T) {
 	test := Test{t}
-	test.AttestNotNil("attest.Test.AttestNotNil failed an implicit test.")
+	test.NotNil("attest.Test.NotNil failed an implicit test.")
 }
-func TestAttestGreaterThan(t *testing.T) {
+func TestGreaterThan(t *testing.T) {
 	test := Test{t}
-	test.AttestGreaterThan(1, 2)
-	test.AttestGreaterThan(1.3, 2.5)
-	test.AttestGreaterThan(int8(1), int8(2))
-	test.AttestGreaterThan(int16(1), int16(2))
-	test.AttestGreaterThan(int32(1), int32(2))
-	test.AttestGreaterThan(int64(1), int64(2))
-	test.AttestGreaterThan(float32(1.3), float32(2.1))
-	test.AttestGreaterThan(float64(1.3), float64(2.1))
+	test.GreaterThan(1, 2)
+	test.GreaterThan(1.3, 2.5)
+	test.GreaterThan(int8(1), int8(2))
+	test.GreaterThan(int16(1), int16(2))
+	test.GreaterThan(int32(1), int32(2))
+	test.GreaterThan(int64(1), int64(2))
+	test.GreaterThan(float32(1.3), float32(2.1))
+	test.GreaterThan(float64(1.3), float64(2.1))
 }
-func TestAttestPositive(t *testing.T) {
+func TestPositive(t *testing.T) {
 	test := Test{t}
-	test.AttestPositive(2)
-	test.AttestPositive(2.5)
-	test.AttestPositive(int8(2))
-	test.AttestPositive(int16(2))
-	test.AttestPositive(int32(2))
-	test.AttestPositive(int64(2))
-	test.AttestPositive(float32(2.1))
+	test.Positive(2)
+	test.Positive(2.5)
+	test.Positive(int8(2))
+	test.Positive(int16(2))
+	test.Positive(int32(2))
+	test.Positive(int64(2))
+	test.Positive(float32(2.1))
 }
-func TestAttestNegative(t *testing.T) {
+func TestNegative(t *testing.T) {
 	test := Test{t}
-	test.AttestNegative(-2)
-	test.AttestNegative(-2.5)
-	test.AttestNegative(int8(-2))
-	test.AttestNegative(int16(-2))
-	test.AttestNegative(int32(-2))
-	test.AttestNegative(int64(-2))
-	test.AttestNegative(float32(-2.1))
+	test.Negative(-2)
+	test.Negative(-2.5)
+	test.Negative(int8(-2))
+	test.Negative(int16(-2))
+	test.Negative(int32(-2))
+	test.Negative(int64(-2))
+	test.Negative(float32(-2.1))
 }
-func TestAttestLessThan(t *testing.T) {
+func TestLessThan(t *testing.T) {
 	test := Test{t}
-	test.AttestLessThan(2, 1)
-	test.AttestLessThan(2.5, 1.3)
-	test.AttestLessThan(int8(2), int8(1))
-	test.AttestLessThan(int16(2), int16(1))
-	test.AttestLessThan(int32(2), int32(1))
-	test.AttestLessThan(int64(2), int64(1))
-	test.AttestLessThan(float32(2.1), float32(1.3))
-	test.AttestLessThan(float64(2.1), float64(1.3))
+	test.LessThan(2, 1)
+	test.LessThan(2.5, 1.3)
+	test.LessThan(int8(2), int8(1))
+	test.LessThan(int16(2), int16(1))
+	test.LessThan(int32(2), int32(1))
+	test.LessThan(int64(2), int64(1))
+	test.LessThan(float32(2.1), float32(1.3))
+	test.LessThan(float64(2.1), float64(1.3))
 }
 
-func TestAttestNotEqual(t *testing.T) {
+func TestNotEqual(t *testing.T) {
 	test := Test{t}
 	var1 := "test var 1"
 	var2 := "test var 2"
-	test.AttestNotEqual(
+	test.NotEqual(
 		var1, var2, "The strings %s and %s were somehow equal", var1, var2)
-	test.AttestNotEqual(
+	test.NotEqual(
 		var1,
 		2,
 		"The differently-typed values %s and %d were somehow equal.",
 		var1,
 		2)
+}
+
+func TestIn(t *testing.T) {
+	test := Test{t}
+	val := "test value"
+	iter := []interface{}{val, "extra value"}
+	test.In(iter, val)
+}
+
+func TestNotIn(t *testing.T) {
+	test := Test{t}
+	val := "test value"
+	iter := []interface{}{"another test value", "extra value"}
+	test.NotIn(iter, val)
 }

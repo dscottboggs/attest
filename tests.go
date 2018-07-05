@@ -20,7 +20,7 @@ func typeOf(val interface{}) string {
 // additional string and additional string formatters to be passed to
 // Test.Attest. If no message is specified, a message will be logged simply
 // stating that the two values weren't equal.
-func (t *Test) AttestEquals(
+func (t *Test) Equals(
 	var1, var2 interface{}, msgAndFormatters ...interface{},
 ) {
 	if len(msgAndFormatters) > 0 {
@@ -53,7 +53,7 @@ func (t *Test) AttestEquals(
 	}
 }
 
-func (t *Test) AttestNotEqual(var1, var2 interface{},
+func (t *Test) NotEqual(var1, var2 interface{},
 	msg string,
 	fmt ...interface{},
 ) {
@@ -89,7 +89,7 @@ func (t *Test) AttestOrDo(that bool,
 }
 
 // AttestNil -- Log a message and fail if the variable is not nil
-func (t *Test) AttestNil(variable interface{}, msgAndFmt ...interface{}) {
+func (t *Test) Nil(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		t.Attest(
 			variable == nil,
@@ -108,7 +108,7 @@ func (t *Test) AttestNil(variable interface{}, msgAndFmt ...interface{}) {
 }
 
 // AttestNotNil --  Log a message and fail if the variable is nil.
-func (t *Test) AttestNotNil(variable interface{}, msgAndFmt ...interface{}) {
+func (t *Test) NotNil(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		t.Attest(
 			variable != nil,
@@ -128,7 +128,7 @@ func (t *Test) AttestNotNil(variable interface{}, msgAndFmt ...interface{}) {
 
 // AttestGreaterThan -- log a message and fail if the variable is less than the
 // expected value
-func (t *Test) AttestGreaterThan(expected,
+func (t *Test) GreaterThan(expected,
 	variable interface{},
 	msgAndFmt ...interface{},
 ) {
@@ -175,7 +175,7 @@ func (t *Test) AttestGreaterThan(expected,
 }
 
 // AttestLessThan -- log a message and fail if variable is negative.
-func (t *Test) AttestLessThan(expected,
+func (t *Test) LessThan(expected,
 	variable interface{},
 	msgAndFmt ...interface{},
 ) {
@@ -219,7 +219,7 @@ func (t *Test) AttestLessThan(expected,
 }
 
 // AttestPositive -- log a message and fail if variable is negative.
-func (t *Test) AttestPositive(variable interface{}, msgAndFmt ...interface{}) {
+func (t *Test) Positive(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		msgAndFmt = []interface{}{"%#v was not positive", variable}
 	}
@@ -272,7 +272,7 @@ func (t *Test) AttestPositive(variable interface{}, msgAndFmt ...interface{}) {
 }
 
 // AttestNegative -- log a message and fail if variable is negative.
-func (t *Test) AttestNegative(variable interface{}, msgAndFmt ...interface{}) {
+func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		msgAndFmt = []interface{}{"%#v was not positive", variable}
 	}
@@ -324,6 +324,51 @@ func (t *Test) AttestNegative(variable interface{}, msgAndFmt ...interface{}) {
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
+func (t *Test) In(iterable []interface{},
+	value interface{},
+	msgAndFmt ...interface{},
+) {
+	found := false
+	for _, entry := range iterable {
+		if entry == value {
+			found = true
+		}
+	}
+	if !found {
+		if len(msgAndFmt) == 0 {
+			msgAndFmt = []interface{}{"%v was not found in %v",
+				value,
+				iterable}
+		}
+		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
+		t.NativeTest.Fail()
+	}
+}
+func (t *Test) NotIn(iterable []interface{},
+	value interface{},
+	msgAndFmt ...interface{},
+) {
+	found := false
+	for _, entry := range iterable {
+		if entry == value {
+			found = true
+		}
+	}
+	if found {
+		if len(msgAndFmt) == 0 {
+			msgAndFmt = []interface{}{"%v was found in %v", value, iterable}
+		}
+		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
+		t.NativeTest.Fail()
+	}
+}
+
+/* 						ERROR HANDLING TESTS
+
+These tests are passed (possibly nil) errors. The test fails if the error is
+not nil, and logs the error and, in some cases, an optional custom message.
+*/
+
 // Handle -- log and fail for an arbitrary number of errors.
 func (t *Test) Handle(e ...error) {
 	for _, err := range e {
@@ -334,13 +379,27 @@ func (t *Test) Handle(e ...error) {
 	}
 }
 
+// MessageHandle -- handle an error with a custom message.
 func (t *Test) MessageHandle(err error, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		t.Handle(err)
 	} else {
 		if err != nil {
-			log.Printf(msgAndFmt[0].(string), msgAndFmt[:1]...)
+			log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
 			t.NativeTest.Fail()
 		}
 	}
+}
+
+// StopIf -- Fail the test and stop running it if an error is present, with
+// optional message.
+func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
+	if err != nil {
+		if len(msgAndFmt) == 0 {
+			msgAndFmt = []interface{}{"Fatal error: %#v", err}
+		}
+		log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
+		t.NativeTest.FailNow()
+	}
+
 }
