@@ -17,7 +17,7 @@ func TestAttestEquals(t *testing.T) {
 }
 func TestAttestOrDo(t *testing.T) {
 	test := Test{t}
-	test.AttestOrDo(true, func(t *Test) {
+	test.AttestOrDo(true, func(t *Test, args ...interface{}) {
 		log.Printf("attest.Test.AttestOrDo has failed an implicit test")
 	})
 }
