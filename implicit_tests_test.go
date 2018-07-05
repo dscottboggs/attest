@@ -71,3 +71,17 @@ func TestAttestLessThan(t *testing.T) {
 	test.AttestLessThan(float32(2.1), float32(1.3))
 	test.AttestLessThan(float64(2.1), float64(1.3))
 }
+
+func TestAttestNotEqual(t *testing.T) {
+	test := Test{t}
+	var1 := "test var 1"
+	var2 := "test var 2"
+	test.AttestNotEqual(
+		var1, var2, "The strings %s and %s were somehow equal", var1, var2)
+	test.AttestNotEqual(
+		var1,
+		2,
+		"The differently-typed values %s and %d were somehow equal.",
+		var1,
+		2)
+}

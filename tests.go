@@ -12,9 +12,22 @@ type Test struct {
 	NativeTest *testing.T
 }
 
+func typeOf(val interface{}) string {
+	return fmt.Sprintf("%T", val)
+}
+
 // AttestEquals that var1 is deeply equal to var2, and print a helpful message
 // if not
 func (t *Test) AttestEquals(var1, var2 interface{}) {
+	t.Attest(
+		typeOf(var1) == typeOf(var2),
+		fmt.Sprintf(
+			"%#v of type %T didn't match the type of %#v, %T; so they can't be"+
+				" compared. ",
+			var1,
+			var1,
+			var2,
+			var2))
 	t.Attest(
 		var1 == var2,
 		fmt.Sprintf(
@@ -23,6 +36,17 @@ func (t *Test) AttestEquals(var1, var2 interface{}) {
 			var1,
 			var2,
 			var2))
+}
+
+func (t *Test) AttestNotEqual(var1, var2 interface{},
+	msg string,
+	fmt ...interface{},
+) {
+	if typeOf(var1) != typeOf(var2) {
+		// types don't match, not equal by default.
+		return
+	}
+	t.Attest(var1 != var2, msg, fmt...)
 }
 
 // Attest that `that` is true, or log `message` and fail the test.
