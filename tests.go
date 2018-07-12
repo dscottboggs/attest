@@ -369,6 +369,26 @@ These tests are passed (possibly nil) errors. The test fails if the error is
 not nil, and logs the error and, in some cases, an optional custom message.
 */
 
+// AttestPanics -- Attest that when fun is called with args, it causes a panic.
+// e.g. t.AttestPanics(func(){log.Printf("Panics, passes test."); panic()})
+//			t.AttestPanics(func(){log.Printf("Doesn't panic, fails test.")})
+func (t *Test) AttestPanics(fun func(...interface{}), args ...interface{}) {
+	defer func() {
+		r := recover()
+		t.Attest(r != nil, "Function %v didn't cause a panic!", fun)
+	}()
+	fun(args...)
+}
+
+// AttestNoPanic -- the inverse of AttestPanics
+func (t *Test) AttestNoPanic(fun func(...interface{}), args ...interface{}) {
+	defer func() {
+		r := recover()
+		t.Attest(r == nil, "Function %v caused a panic!", fun)
+	}()
+	fun(args...)
+}
+
 // Handle -- log and fail for an arbitrary number of errors.
 func (t *Test) Handle(e ...error) {
 	for _, err := range e {

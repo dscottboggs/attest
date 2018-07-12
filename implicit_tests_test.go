@@ -1,6 +1,7 @@
 package attest
 
 import (
+	"fmt"
 	"log"
 	"testing"
 )
@@ -98,4 +99,26 @@ func TestNotIn(t *testing.T) {
 	val := "test value"
 	iter := []interface{}{"another test value", "extra value"}
 	test.NotIn(iter, val)
+}
+
+func TestAttestPanics(t *testing.T) {
+	test := Test{t}
+	test.AttestPanics(func(a ...interface{}) { panic(a[0].(string)) }, "test panic")
+	defer func() {
+		r := recover()
+		test.Attest(r == nil, "Printing a word caused a panic.")
+	}()
+	fmt.Println("Test passed.")
+}
+
+func TestAttestNoPanic(t *testing.T) {
+	test := Test{t}
+	test.AttestNoPanic(
+		func(a ...interface{}) { fmt.Printf(a[0].(string)) },
+		"Test function shouldn't panic.")
+	defer func() {
+		r := recover()
+		test.Attest(r != nil, "Test error function didn't panic!")
+	}()
+	panic("test panic")
 }
