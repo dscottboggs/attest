@@ -9,14 +9,14 @@ import (
 // Test -- A structure for containing methods and data for asserting and
 // testing assertion validity
 type Test struct {
-	NativeTest *testing.T
+	*testing.T
 }
 
 func typeOf(val interface{}) string {
 	return fmt.Sprintf("%T", val)
 }
 
-// AttestEquals that var1 is deeply equal to var2. Optionally, you can pass an
+// Equals that var1 is deeply equal to var2. Optionally, you can pass an
 // additional string and additional string formatters to be passed to
 // Test.Attest. If no message is specified, a message will be logged simply
 // stating that the two values weren't equal.
@@ -53,6 +53,8 @@ func (t *Test) Equals(
 	}
 }
 
+// NotEqual fails the test if var1 doesn't equal var2, with the given message
+// and formatting.
 func (t *Test) NotEqual(var1, var2 interface{},
 	msg string,
 	fmt ...interface{},
@@ -72,7 +74,7 @@ func (t *Test) Attest(that bool, message string, formatters ...interface{}) {
 		} else {
 			fmt.Printf(message+"\n", formatters...)
 		}
-		t.NativeTest.Fail()
+		t.Fail()
 	}
 }
 
@@ -84,11 +86,11 @@ func (t *Test) AttestOrDo(that bool,
 ) {
 	if !that {
 		callback(t, cbArgs...)
-		t.NativeTest.Fail()
+		t.Fail()
 	}
 }
 
-// AttestNil -- Log a message and fail if the variable is not nil
+// Nil -- Log a message and fail if the variable is not nil
 func (t *Test) Nil(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		t.Attest(
@@ -107,7 +109,7 @@ func (t *Test) Nil(variable interface{}, msgAndFmt ...interface{}) {
 	}
 }
 
-// AttestNotNil --  Log a message and fail if the variable is nil.
+// NotNil --  Log a message and fail if the variable is nil.
 func (t *Test) NotNil(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		t.Attest(
@@ -126,7 +128,7 @@ func (t *Test) NotNil(variable interface{}, msgAndFmt ...interface{}) {
 	}
 }
 
-// AttestGreaterThan -- log a message and fail if the variable is less than the
+// GreaterThan -- log a message and fail if the variable is less than the
 // expected value
 func (t *Test) GreaterThan(expected,
 	variable interface{},
@@ -154,7 +156,7 @@ func (t *Test) GreaterThan(expected,
 			variable,
 			expected,
 			variable)
-		t.NativeTest.Fail()
+		t.Fail()
 	case int:
 		t.Attest(variable.(int) > expected.(int), msg())
 	case int8:
@@ -174,7 +176,7 @@ func (t *Test) GreaterThan(expected,
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
-// AttestLessThan -- log a message and fail if variable is negative.
+// LessThan -- log a message and fail if variable is negative.
 func (t *Test) LessThan(expected,
 	variable interface{},
 	msgAndFmt ...interface{},
@@ -198,7 +200,7 @@ func (t *Test) LessThan(expected,
 			"Can't check value of %#v: check isn't implemented for type %T",
 			variable,
 			variable)
-		t.NativeTest.Fail()
+		t.Fail()
 	case int:
 		t.Attest(variable.(int) < expected.(int), msg())
 	case int8:
@@ -218,7 +220,7 @@ func (t *Test) LessThan(expected,
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
-// AttestPositive -- log a message and fail if variable is negative.
+// Positive -- log a message and fail if variable is negative or zero.
 func (t *Test) Positive(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		msgAndFmt = []interface{}{"%#v was not positive", variable}
@@ -230,7 +232,7 @@ func (t *Test) Positive(variable interface{}, msgAndFmt ...interface{}) {
 				"type %T",
 			variable,
 			variable)
-		t.NativeTest.Fail()
+		t.Fail()
 	case int:
 		t.Attest(
 			variable.(int) > 0,
@@ -271,7 +273,7 @@ func (t *Test) Positive(variable interface{}, msgAndFmt ...interface{}) {
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
-// AttestNegative -- log a message and fail if variable is negative.
+// Negative -- log a message and fail if variable is positive or zero.
 func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 	if len(msgAndFmt) == 0 {
 		msgAndFmt = []interface{}{"%#v was not positive", variable}
@@ -283,7 +285,7 @@ func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 				"type %T",
 			variable,
 			variable)
-		t.NativeTest.Fail()
+		t.Fail()
 	case int:
 		t.Attest(
 			variable.(int) < 0,
@@ -324,6 +326,7 @@ func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
+// In -- Check if the given value is a member the given iterable.
 func (t *Test) In(iterable []interface{},
 	value interface{},
 	msgAndFmt ...interface{},
@@ -341,9 +344,11 @@ func (t *Test) In(iterable []interface{},
 				iterable}
 		}
 		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
-		t.NativeTest.Fail()
+		t.Fail()
 	}
 }
+
+// NotIn -- Fail the test if value is a member of iterable.
 func (t *Test) NotIn(iterable []interface{},
 	value interface{},
 	msgAndFmt ...interface{},
@@ -359,7 +364,24 @@ func (t *Test) NotIn(iterable []interface{},
 			msgAndFmt = []interface{}{"%v was found in %v", value, iterable}
 		}
 		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
-		t.NativeTest.Fail()
+		t.Fail()
+	}
+}
+
+// TypeIs fails the test if the type of the value does not match the typestring,
+// as determined by fmt.Sprintf("%T")
+func (t *Test) TypeIs(typestring string, value interface{}) {
+	if fmt.Sprintf("%T", value) == typestring {
+		return
+	}
+	t.Errorf("Type of %#v wasn't %s.", value, typestring)
+}
+
+// TypeIsNot is the inverse of TypeIs; it fails the test if the type of value
+// matches the typestring.
+func (t *Test) TypeIsNot(typestring string, value interface{}) {
+	if fmt.Sprintf("%T", value) == typestring {
+		t.Errorf("Type of %#v was %s.", value, typestring)
 	}
 }
 
@@ -394,7 +416,7 @@ func (t *Test) Handle(e ...error) {
 	for _, err := range e {
 		if err != nil {
 			log.Println(err)
-			t.NativeTest.Fail()
+			t.Fail()
 		}
 	}
 }
@@ -406,7 +428,7 @@ func (t *Test) MessageHandle(err error, msgAndFmt ...interface{}) {
 	} else {
 		if err != nil {
 			log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
-			t.NativeTest.Fail()
+			t.Fail()
 		}
 	}
 }
@@ -419,7 +441,7 @@ func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 			msgAndFmt = []interface{}{"Fatal error: %#v", err}
 		}
 		log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
-		t.NativeTest.FailNow()
+		t.FailNow()
 	}
 
 }
