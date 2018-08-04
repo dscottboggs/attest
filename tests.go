@@ -445,3 +445,13 @@ func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 	}
 
 }
+
+// EatError accepts two values, the latter of which is a nillable error. If the
+// error is not nil, the test is failed. Regardless, the first value is
+// returned through the function.
+func (t *Test) EatError(value interface{}, err error) interface{} {
+	if err != nil {
+		t.Errorf("When aquiring value %#v, got error %#v", value, err)
+	}
+	return value
+}

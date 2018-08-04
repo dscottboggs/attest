@@ -122,3 +122,10 @@ func TestAttestNoPanic(t *testing.T) {
 	}()
 	panic("test panic")
 }
+
+func TestEatError(t *testing.T) {
+	test := Test{t}
+	test.Equals("success", test.EatError(func() (string, error) {
+		return "success", nil
+	}()))
+}
