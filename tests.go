@@ -78,6 +78,16 @@ func (t *Test) Attest(that bool, message string, formatters ...interface{}) {
 	}
 }
 
+// AttestNot -- assert that `that` is false. It just calls t.Attest(!that...
+func (t *Test) AttestNot(that bool, message string, formatters ...interface{}) {
+	t.Attest(!that, message, formatters...)
+}
+
+// Not does exactly the same thing that AttestNot does.
+func (t *Test) Not(that bool, message string, formatters ...interface{}) {
+	t.AttestNot(that, message, formatters...)
+}
+
 // AttestOrDo -- call `callback` with the Test as a parameter and fail the test
 // should `that` be false.
 func (t *Test) AttestOrDo(that bool,

@@ -10,6 +10,11 @@ func TestAttest(t *testing.T) {
 	test := Test{t}
 	test.Attest(true, "attest.Test.Attest has failed an implicit test.")
 }
+func TestAttestNot(t *testing.T) {
+	test := Test{t}
+	test.AttestNot(false, "attest.Test.AttestNot has failed an implicit test.")
+	test.Not(false, "attest.Test.Not has failed an implicit test.")
+}
 func TestEquals(t *testing.T) {
 	test := Test{t}
 	test.Equals(
