@@ -497,8 +497,9 @@ not nil, and logs the error and, in some cases, an optional custom message.
 */
 
 // AttestPanics -- Attest that when fun is called with args, it causes a panic.
-// e.g. t.AttestPanics(func(){log.Printf("Panics, passes test."); panic()})
-//			t.AttestPanics(func(){log.Printf("Doesn't panic, fails test.")})
+// e.g.
+//	t.AttestPanics(func(){log.Printf("Panics, passes test."); panic()})
+//	t.AttestPanics(func(){log.Printf("Doesn't panic, fails test.")})
 func (t *Test) AttestPanics(fun func(...interface{}), args ...interface{}) {
 	defer func() {
 		r := recover()
