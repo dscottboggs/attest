@@ -431,50 +431,9 @@ func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
-// In -- Check if the given value is a member the given iterable.
-func (t *Test) In(iterable []interface{},
-	value interface{},
-	msgAndFmt ...interface{},
-) {
-	found := false
-	for _, entry := range iterable {
-		if entry == value {
-			found = true
-		}
-	}
-	if !found {
-		if len(msgAndFmt) == 0 {
-			msgAndFmt = []interface{}{"%v was not found in %v",
-				value,
-				iterable}
-		}
-		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
-		t.Fail()
-	}
-}
-
-// NotIn -- Fail the test if value is a member of iterable.
-func (t *Test) NotIn(iterable []interface{},
-	value interface{},
-	msgAndFmt ...interface{},
-) {
-	found := false
-	for _, entry := range iterable {
-		if entry == value {
-			found = true
-		}
-	}
-	if found {
-		if len(msgAndFmt) == 0 {
-			msgAndFmt = []interface{}{"%v was found in %v", value, iterable}
-		}
-		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
-		t.Fail()
-	}
-}
-
 // TypeIs fails the test if the type of the value does not match the typestring,
-// as determined by fmt.Sprintf("%T")
+// as determined by fmt.Sprintf("%T"). For example, a "Test" struct from the
+// "attest" package (this one), would have the type "attest.Test".
 func (t *Test) TypeIs(typestring string, value interface{}) {
 	if fmt.Sprintf("%T", value) == typestring {
 		return
@@ -554,7 +513,8 @@ func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 
 // EatError accepts two values, the latter of which is a nillable error. If the
 // error is not nil, the test is failed. Regardless, the first value is
-// returned through the function.
+// returned through the function. The returned value must be asserted to have
+// its type in order to convert it from the generic interface{} type.
 func (t *Test) EatError(value interface{}, err error) interface{} {
 	if err != nil {
 		t.Errorf("When aquiring value %#v, got error %#v", value, err)

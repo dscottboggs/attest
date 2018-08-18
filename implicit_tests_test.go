@@ -92,20 +92,6 @@ func TestNotEqual(t *testing.T) {
 		2)
 }
 
-func TestIn(t *testing.T) {
-	test := Test{t}
-	val := "test value"
-	iter := []interface{}{val, "extra value"}
-	test.In(iter, val)
-}
-
-func TestNotIn(t *testing.T) {
-	test := Test{t}
-	val := "test value"
-	iter := []interface{}{"another test value", "extra value"}
-	test.NotIn(iter, val)
-}
-
 func TestAttestPanics(t *testing.T) {
 	test := Test{t}
 	test.AttestPanics(func(a ...interface{}) { panic(a[0].(string)) }, "test panic")
@@ -120,7 +106,9 @@ func TestAttestNoPanic(t *testing.T) {
 	test := Test{t}
 	test.AttestNoPanic(
 		func(a ...interface{}) { fmt.Printf(a[0].(string)) },
-		"Test function shouldn't panic.")
+		"Test function shouldn't panic.\n")
+	// the following is an explicit test on the implementation, not an implicit
+	// test like the others.
 	defer func() {
 		r := recover()
 		test.Attest(r != nil, "Test error function didn't panic!")
@@ -128,9 +116,12 @@ func TestAttestNoPanic(t *testing.T) {
 	panic("test panic")
 }
 
+// this function is called by EatError, it returns a value and a string
+func returnsError() (string, error) {
+	return "success", nil
+}
+
 func TestEatError(t *testing.T) {
 	test := Test{t}
-	test.Equals("success", test.EatError(func() (string, error) {
-		return "success", nil
-	}()))
+	test.Equals("success", test.EatError(returnsError()).(string))
 }
