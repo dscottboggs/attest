@@ -1,0 +1,74 @@
+package attest
+
+import "log"
+
+/*
+These tests are passed (possibly nil) errors. The test fails if the error is
+not nil, and logs the error and, in some cases, an optional custom message.
+*/
+
+// AttestPanics -- Attest that when fun is called with args, it causes a panic.
+// e.g.
+//	t.AttestPanics(func(){log.Printf("Panics, passes test."); panic()})
+//	t.AttestPanics(func(){log.Printf("Doesn't panic, fails test.")})
+func (t *Test) AttestPanics(fun func(...interface{}), args ...interface{}) {
+	defer func() {
+		r := recover()
+		t.Attest(r != nil, "Function %v didn't cause a panic!", fun)
+	}()
+	fun(args...)
+}
+
+// AttestNoPanic -- the inverse of AttestPanics
+func (t *Test) AttestNoPanic(fun func(...interface{}), args ...interface{}) {
+	defer func() {
+		r := recover()
+		t.Attest(r == nil, "Function %v caused a panic!", fun)
+	}()
+	fun(args...)
+}
+
+// Handle -- log and fail for an arbitrary number of errors.
+func (t *Test) Handle(e ...error) {
+	for _, err := range e {
+		if err != nil {
+			log.Println(err)
+			t.Fail()
+		}
+	}
+}
+
+// MessageHandle -- handle an error with a custom message.
+func (t *Test) MessageHandle(err error, msgAndFmt ...interface{}) {
+	if len(msgAndFmt) == 0 {
+		t.Handle(err)
+	} else {
+		if err != nil {
+			log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
+			t.Fail()
+		}
+	}
+}
+
+// StopIf -- Fail the test and stop running it if an error is present, with
+// optional message.
+func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
+	if err != nil {
+		if len(msgAndFmt) == 0 {
+			msgAndFmt = []interface{}{"Fatal error: %#v", err}
+		}
+		log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
+		t.FailNow()
+	}
+
+}
+
+// EatError accepts two values, the latter of which is a nillable error. If the
+// error is not nil, the test is failed. Regardless, the first value is
+// returned through the function.
+func (t *Test) EatError(value interface{}, err error) interface{} {
+	if err != nil {
+		t.Errorf("When aquiring value %#v, got error %#v", value, err)
+	}
+	return value
+}
