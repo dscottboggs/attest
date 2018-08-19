@@ -432,50 +432,9 @@ func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 	// FIXME: implement GT/LT for complex64 and complex128
 }
 
-// In -- Check if the given value is a member the given iterable.
-func (t *Test) In(iterable []interface{},
-	value interface{},
-	msgAndFmt ...interface{},
-) {
-	found := false
-	for _, entry := range iterable {
-		if entry == value {
-			found = true
-		}
-	}
-	if !found {
-		if len(msgAndFmt) == 0 {
-			msgAndFmt = []interface{}{"%v was not found in %v",
-				value,
-				iterable}
-		}
-		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
-		t.Fail()
-	}
-}
-
-// NotIn -- Fail the test if value is a member of iterable.
-func (t *Test) NotIn(iterable []interface{},
-	value interface{},
-	msgAndFmt ...interface{},
-) {
-	found := false
-	for _, entry := range iterable {
-		if entry == value {
-			found = true
-		}
-	}
-	if found {
-		if len(msgAndFmt) == 0 {
-			msgAndFmt = []interface{}{"%v was found in %v", value, iterable}
-		}
-		log.Printf(msgAndFmt[0].(string)+"\n", msgAndFmt[1:]...)
-		t.Fail()
-	}
-}
-
 // TypeIs fails the test if the type of the value does not match the typestring,
-// as determined by fmt.Sprintf("%T")
+// as determined by fmt.Sprintf("%T"). For example, a "Test" struct from the
+// "attest" package (this one), would have the type "attest.Test".
 func (t *Test) TypeIs(typestring string, value interface{}) {
 	if fmt.Sprintf("%T", value) != typestring {
 		t.Errorf("Type of %#v wasn't %s.", value, typestring)

@@ -1,0 +1,4 @@
+'.source.go':
+  'Attest Test':
+    'prefix': 'attest'
+    'body' : 'func $1(t *testing.T) {\n\ttest := attest.Test{t}\n\t$2\n}'
