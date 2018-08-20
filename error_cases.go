@@ -29,23 +29,36 @@ func (t *Test) AttestNoPanic(fun func(...interface{}), args ...interface{}) {
 }
 
 // Handle -- log and fail for an arbitrary number of errors.
-func (t *Test) Handle(e ...error) {
+func (t *Test) HandleMultiple(e ...error) {
 	for _, err := range e {
 		if err != nil {
-			log.Println(err)
-			t.Fail()
+			t.Error(err)
 		}
 	}
 }
 
-// MessageHandle -- handle an error with a custom message.
-func (t *Test) MessageHandle(err error, msgAndFmt ...interface{}) {
+// Handle -- handle an error with an optional custom message.
+func (t *Test) Handle(err error, msgAndFmt ...interface{}) {
+	if err == nil && len(msgAndFmt) == 0 {
+		return
+	}
 	if len(msgAndFmt) == 0 {
-		t.Handle(err)
-	} else {
-		if err != nil {
-			log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
-			t.Fail()
+		t.Error(err)
+		return
+	}
+	if err != nil {
+		switch msgAndFmt[0].(type) {
+		case string:
+			t.Errorf(msgAndFmt[0].(string), msgAndFmt[1:]...)
+		case error:
+			t.Errorf(
+				"WARNING! starting at attest version 1.0, use HandleMultiple to handle" +
+					"multiple error cases.")
+		default:
+			t.Errorf(
+				"Got type %T for second argument to Test.Handle(). If more than one"+
+					"argument is specified, the second one MUST be a string.",
+				msgAndFmt[0])
 		}
 	}
 }
