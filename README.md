@@ -1,6 +1,15 @@
 # attest
 An ever-growing list of assertions that make Go tests more readable and concise.
 
+## Installation:
+Install Go, from your operating system's package manager or from the [Golang website](https://golang.org/dl/).
+
+Open a terminal/console window and run
+
+`go get github.com/dscottboggs/attest`
+
+done!
+
 ## Usage:
     package main
 
