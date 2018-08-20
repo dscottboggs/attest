@@ -102,6 +102,17 @@ import (
 	"testing"
 )
 
+// New returns a new Test struct so that you don't get the linter complaining
+// about unkeyed struct literals when the value has no key
+func New(t *testing.T) Test {
+	return Test{t}
+}
+
+// NewTest does the same thing as New
+func NewTest(t *testing.T) Test {
+	return Test{t}
+}
+
 // Test -- A structure for containing methods and data for asserting and
 // testing assertion validity
 type Test struct {
