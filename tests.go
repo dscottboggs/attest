@@ -16,7 +16,7 @@
  *        )
  *
  *        func TestExample(t \*testing.T) {
- *            test := attest.New(t)
+ *            test := attest.NewTest(t)
  *            test.Attest(fmt.Sprintf("%T", "that something is true") == "string", "or %s a message", "log")
  *            const unchanging = 0
  *            var variable int
@@ -73,14 +73,16 @@
  * # Available test functions
  * The following tests are available:
  *
- *  - **Attest**: the first argument must equal the boolean value true.
+ *  - **Attest** and **That**: the first argument must equal the boolean value true.
  *  - **AttestNot** and **Not**: the first argument must equal the boolean value false.
  *  - **AttestOrDo**: takes a callback function and arguments to forward to the callback in case of a failure
  *  - **Nil** and **NotNil**: the first argument must be nil or not nil, respectively.
  *  - **Equals** and **NotEqual**: the second argument must equal (or not equal, respectively) the first argument. Both require that the arguments be the same type
+ *  - **Compares**, **SimilarTo**, **DoesNotCompare**, and **NotSimilarTo**: like Equals and NotEquals but the types don't have to be the same.
  *  - **GreaterThan** and **LessThan**: like Equals, but checks for the second value to be greater or less than the first argument.
  *  - **Positive** and **Negative**: are shortcuts for test.LessThan(0, ...) and test.GreaterThan(0, ...)
  *  - **TypeIs** and **TypeIsNot**: check the type of a value
+ *  - **Matches** and **DoesNotMatch**: Check if the value matches a given regular expression.
  *
  * In addition there are the following ways of handling error types and panics:
  *  - **Handle**: Log and fail if the first argument is a non-nil error.
