@@ -16,7 +16,7 @@
  *        )
  *
  *        func TestExample(t \*testing.T) {
- *            test := attest.Test{t}
+ *            test := attest.New(t)
  *            test.Attest(fmt.Sprintf("%T", "that something is true") == "string", "or %s a message", "log")
  *            const unchanging = 0
  *            var variable int
@@ -54,7 +54,7 @@
  * easier to understand. Of course, you can mix-and-match:
  *
  *     func TestExample(t \*testing.T){
- *         test := attest.Test{t}
+ *         test := attest.New(t)
  *         if fmt.Sprintf("%T", "something is true") != "string" {
  *             test.Errorf("or %s a message", "log")
  *         }
@@ -83,14 +83,11 @@
  *  - **TypeIs** and **TypeIsNot**: check the type of a value
  *
  * In addition there are the following ways of handling error types and panics:
- *  - **Handle**: Log and fail if any of the arguments to this are non-nil errors.
+ *  - **Handle**: Log and fail if the first argument is a non-nil error.
+ *  - **HandleMultiple**: Log and fail if any of the arguments to this are non-nil errors. Does not accept a callback or message.
  *  - **AttestPanics** and **AttestNoPanic**: ensure the given function panics or doesn't.
  *  - **StopIf**: Log and fail a fatal non-nil error
- *  - **MessageHandle**: Like handle but instead of accepting an arbitrary number of errors, it accepts a message and formatters
  *  - **EatError**: Logs and fails an error message if the second argument is a non-nil error, and returns the first argument. For handling function calls that return a value and an error in a single line.
- *
- * The following APIs are works in progress and are subject to change:
- *  - **In** and **NotIn**: Currently doesn't work as expected due to go's typing system.
  */
 
 package attest
@@ -123,7 +120,7 @@ func typeOf(val interface{}) string {
 	return fmt.Sprintf("%T", val)
 }
 
-// Equals that var1 is deeply equal to var2. Optionally, you can pass an
+// Equals checks that var1 is deeply equal to var2. Optionally, you can pass an
 // additional string and additional string formatters to be passed to
 // Test.Attest. If no message is specified, a message will be logged simply
 // stating that the two values weren't equal.
@@ -160,17 +157,61 @@ func (t *Test) Equals(
 	}
 }
 
-// NotEqual fails the test if var1 doesn't equal var2, with the given message
+// Compares checks to see if var1 loosely equals var2. This allows for some
+// minor type coersion before checking equality. For example,
+// Test.Equals("5", 5) will fail, but Test.Compares("5", 5) will pass.
+//
+// This works by converting all values to a string with fmt.Sprintf("%v", value)
+// before checking equality.
+func (t *Test) Compares(var1, var2 interface{}, msgAndFmt ...interface{}) {
+	t.Equals(fmt.Sprintf("%v", var1), fmt.Sprintf("%v", var2), msgAndFmt...)
+}
+
+// SimilarTo is a semantic mirror of "Compares".
+func (t *Test) SimilarTo(var1, var2 interface{}, msgAndFmt ...interface{}) {
+	t.Compares(var1, var2, msgAndFmt...)
+}
+
+// NotEqual fails the test if var1 equals var2, with the given message
 // and formatting.
-func (t *Test) NotEqual(var1, var2 interface{},
-	msg string,
-	fmt ...interface{},
-) {
+func (t *Test) NotEqual(var1, var2 interface{}, msgAndFmt ...interface{}) {
 	if typeOf(var1) != typeOf(var2) {
 		// types don't match, not equal by default.
 		return
 	}
-	t.Attest(var1 != var2, msg, fmt...)
+	if len(msgAndFmt) == 0 {
+		t.NotEqual(
+			var1,
+			var2,
+			"received equal values of %#+v, expected to not equal.",
+			var1,
+		)
+	}
+	t.Attest(var1 != var2, msgAndFmt[0].(string), msgAndFmt[1:]...)
+}
+
+// DoesNotCompare does the opposite of Compares/SimilarTo, the same as
+// NotSimilarTo
+func (t *Test) DoesNotCompare(var1, var2 interface{}, msgAndFmt ...interface{}) {
+	if len(msgAndFmt) == 0 {
+		t.DoesNotCompare(
+			var1,
+			var2,
+			"%#+v (%v as a string) was supposed to be similar to %#+v (string: %v)",
+			var1,
+			var1,
+			var2,
+			var2,
+		)
+	} else {
+		t.NotEqual(fmt.Sprintf("%v", var1), fmt.Sprintf("%v", var2), msgAndFmt...)
+	}
+}
+
+// NotSimilarTo does the opposite of Compares/SimilarTo, the same as
+// DoesNotCompare
+func (t *Test) NotSimilarTo(var1, var2 interface{}, msgAndFmt ...interface{}) {
+	t.DoesNotCompare(var1, var2, msgAndFmt...)
 }
 
 // Attest that `that` is true, or log `message` and fail the test.
@@ -183,6 +224,11 @@ func (t *Test) Attest(that bool, message string, formatters ...interface{}) {
 		}
 		t.Fail()
 	}
+}
+
+// That mirrors the functionality of Attest.
+func (t *Test) That(boolean bool, message string, formatters ...interface{}) {
+	t.Attest(boolean, message, formatters...)
 }
 
 // AttestNot -- assert that `that` is false. It just calls t.Attest(!that...
@@ -209,55 +255,51 @@ func (t *Test) AttestOrDo(that bool,
 
 // Nil -- Log a message and fail if the variable is not nil
 func (t *Test) Nil(variable interface{}, msgAndFmt ...interface{}) {
+	var (
+		message string
+		format  []interface{}
+	)
 	if len(msgAndFmt) == 0 {
-		t.Attest(
-			variable == nil,
-			"%#v was expected to be nil, but was not!",
-			variable)
+		message = "%#+v was expected to be nil, but was not!"
+		format = make([]interface{}, 1)
+		format[0] = variable
 	} else if len(msgAndFmt) == 1 {
-		t.Attest(
-			variable == nil,
-			msgAndFmt[0].(string))
+		message = msgAndFmt[0].(string)
 	} else {
-		t.Attest(
-			variable == nil,
-			msgAndFmt[0].(string),
-			msgAndFmt[1:]...)
+		message = msgAndFmt[0].(string)
+		format = msgAndFmt[1:]
 	}
+	t.Attest(
+		variable == nil,
+		message,
+		format...)
 }
 
-// NotNil --  Log a message and fail if the variable is nil.
-func (t *Test) NotNil(variable interface{}, msgAndFmt ...interface{}) {
-	if len(msgAndFmt) == 0 {
-		t.Attest(
-			variable != nil,
-			"%#v was expected to have a value but instead was nil",
-			variable)
-	} else if len(msgAndFmt) == 1 {
-		t.Attest(
-			variable != nil,
-			msgAndFmt[0].(string))
-	} else {
-		t.Attest(
-			variable != nil,
-			msgAndFmt[0].(string),
-			msgAndFmt[1:]...)
-	}
+// NotNil --  Log a message and fail if the variable is nil. The explanatory
+// message is not optional for this function. If the explanatory message were
+// not provided, the default would be "nil was expected to not be nil" which
+// isn't very descriptive.
+func (t *Test) NotNil(variable interface{}, msg string, formatters ...interface{}) {
+	t.Attest(
+		variable != nil,
+		msg,
+		formatters...)
 }
 
 // GreaterThan -- log a message and fail if the variable is less than the
 // expected value
-func (t *Test) GreaterThan(expected,
+func (t *Test) GreaterThan(
+	expected,
 	variable interface{},
 	msgAndFmt ...interface{},
 ) {
-	defMsg := fmt.Sprintf(
+	defaultMessage := fmt.Sprintf(
 		"Value (%#v) was less than expected (%#v).",
 		variable,
 		expected)
 	msg := func() string {
 		if len(msgAndFmt) == 0 {
-			return defMsg
+			return defaultMessage
 		}
 		if len(msgAndFmt) == 1 {
 			return msgAndFmt[0].(string)
@@ -268,7 +310,7 @@ func (t *Test) GreaterThan(expected,
 	default:
 		log.Printf(
 			"When trying check that %v was greater than %v, found non-numeric "+
-				"types %T and %T",
+				"types %T and %T.",
 			expected,
 			variable,
 			expected,
@@ -298,13 +340,13 @@ func (t *Test) LessThan(expected,
 	variable interface{},
 	msgAndFmt ...interface{},
 ) {
-	defMsg := fmt.Sprintf(
+	defaultMessage := fmt.Sprintf(
 		"Value (%#v) was greater than expected (%#v).",
 		variable,
 		expected)
 	msg := func() string {
 		if len(msgAndFmt) == 0 {
-			return defMsg
+			return defaultMessage
 		}
 		if len(msgAndFmt) == 1 {
 			return msgAndFmt[0].(string)
@@ -446,22 +488,44 @@ func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 // TypeIs fails the test if the type of the value does not match the typestring,
 // as determined by fmt.Sprintf("%T"). For example, a "Test" struct from the
 // "attest" package (this one), would have the type "attest.Test".
-func (t *Test) TypeIs(typestring string, value interface{}) {
+func (t *Test) TypeIs(typestring string, value interface{}, msgAndFmt ...interface{}) {
+	var message string
+	var formatters []interface{}
+	if len(msgAndFmt) == 0 {
+		message = "Type of %#v wasn't %s."
+		formatters = make([]interface{}, 2)
+		formatters[0] = value
+		formatters[1] = typestring
+	} else {
+		message = msgAndFmt[0].(string)
+		formatters = msgAndFmt[1:]
+	}
 	if fmt.Sprintf("%T", value) != typestring {
-		t.Errorf("Type of %#v wasn't %s.", value, typestring)
+		t.Errorf(message, formatters...)
 	}
 }
 
 // TypeIsNot is the inverse of TypeIs; it fails the test if the type of value
 // matches the typestring.
-func (t *Test) TypeIsNot(typestring string, value interface{}) {
+func (t *Test) TypeIsNot(typestring string, value interface{}, msgAndFmt ...interface{}) {
+	var message string
+	var formatters []interface{}
+	if len(msgAndFmt) == 0 {
+		message = "Type of %#v was %s."
+		formatters = make([]interface{}, 2)
+		formatters[0] = value
+		formatters[1] = typestring
+	} else {
+		message = msgAndFmt[0].(string)
+		formatters = msgAndFmt[1:]
+	}
 	if fmt.Sprintf("%T", value) == typestring {
-		t.Errorf("Type of %#v was %s.", value, typestring)
+		t.Errorf(message, formatters...)
 	}
 }
 
 // Matches determines if value matches the regex pattern
-func (t *Test) Matches(pattern, value string) {
+func (t *Test) Matches(pattern, value string, msgAndFmt ...interface{}) {
 	matched, err := regexp.MatchString(pattern, value)
 	if err != nil {
 		t.Errorf(
@@ -471,13 +535,15 @@ func (t *Test) Matches(pattern, value string) {
 			err,
 		)
 	}
-	if !matched {
-		t.Errorf("string %v didn't match pattern %v", value, pattern)
+	if len(msgAndFmt) == 0 {
+		t.Attest(matched, "string %v didn't match pattern %v", value, pattern)
+	} else {
+		t.Attest(matched, msgAndFmt[0].(string), msgAndFmt[1:]...)
 	}
 }
 
 // DoesNotMatch inverts Matches
-func (t *Test) DoesNotMatch(pattern, value string) {
+func (t *Test) DoesNotMatch(pattern, value string, msgAndFmt ...interface{}) {
 	matched, err := regexp.MatchString(pattern, value)
 	if err != nil {
 		t.Errorf(
@@ -487,11 +553,13 @@ func (t *Test) DoesNotMatch(pattern, value string) {
 			err,
 		)
 	}
-	if matched {
-		t.Errorf(
+	if len(msgAndFmt) == 0 {
+		t.AttestNot(
+			matched,
 			"string %v was expected to not match pattern %v",
 			value,
-			pattern,
-		)
+			pattern)
+	} else {
+		t.AttestNot(matched, msgAndFmt[0].(string), msgAndFmt[1:]...)
 	}
 }

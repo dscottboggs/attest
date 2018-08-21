@@ -20,6 +20,16 @@ func TestEquals(t *testing.T) {
 		"attest.Test.Equals has failed an implicit test.",
 		"attest.Test.Equals has failed an implicit test.")
 }
+func TestCompares(t *testing.T) {
+	test := NewTest(t)
+	test.Compares("987", 987)
+	test.SimilarTo([]string{"5", "6", "7"}, []int{5, 6, 7})
+}
+func TestDoesNotCompare(t *testing.T) {
+	test := NewTest(t)
+	test.DoesNotCompare("two values that", "are not the same")
+	test.NotSimilarTo(5, "var2")
+}
 func TestAttestOrDo(t *testing.T) {
 	test := Test{t}
 	test.AttestOrDo(true, func(t *Test, args ...interface{}) {
@@ -32,7 +42,11 @@ func TestNil(t *testing.T) {
 }
 func TestNotNil(t *testing.T) {
 	test := Test{t}
-	test.NotNil("attest.Test.NotNil failed an implicit test.")
+	test.NotNil(
+		"non-nil value",
+		"required message: %s",
+		"attest.Test.NotNil failed an implicit test.", //formatters not required
+	)
 }
 func TestGreaterThan(t *testing.T) {
 	test := Test{t}
