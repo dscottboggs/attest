@@ -1,3 +1,5 @@
+package attest
+
 /* Attest is a very lightweight testing library aimed at improving the
  * intuitiveness and aesthetics of the go standard testing library, as well as
  * reducing the amount of keystrokes per test, hence improving developer
@@ -91,8 +93,6 @@
  *  - **StopIf**: Log and fail a fatal non-nil error
  *  - **EatError**: Logs and fails an error message if the second argument is a non-nil error, and returns the first argument. For handling function calls that return a value and an error in a single line.
  */
-
-package attest
 
 import (
 	"fmt"
