@@ -1,3 +1,9 @@
+/**
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package attest
 
 import "log"
@@ -80,6 +86,15 @@ func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 // error is not nil, the test is failed. Regardless, the first value is
 // returned through the function.
 func (t *Test) EatError(value interface{}, err error) interface{} {
+	if err != nil {
+		t.Errorf("When aquiring value %#v, got error %#v", value, err)
+	}
+	return value
+}
+
+// EatError accepts two values, the latter of which is a nillable error. If the
+// error is not nil, the test is failed immediately.
+func (t *Test) FailOnError(value interface{}, err error) interface{} {
 	if err != nil {
 		t.Errorf("When aquiring value %#v, got error %#v", value, err)
 	}

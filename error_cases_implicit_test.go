@@ -1,3 +1,9 @@
+/**
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package attest
 
 import (
@@ -21,14 +27,19 @@ func TestAttestNoPanic(t *testing.T) {
 	)
 }
 
-// this function is called by EatError, it returns a value and a string
-func returnsError() (string, error) {
+// this function is called by EatError, it returns a value and a nil error
+func returnsNilError() (string, error) {
 	return "success", nil
 }
 
 func TestEatError(t *testing.T) {
 	test := Test{t}
-	test.Equals("success", test.EatError(returnsError()).(string))
+	test.Equals("success", test.EatError(returnsNilError()).(string))
+}
+
+func TestFailOnError(t *testing.T) {
+	test := Test{t}
+	test.Equals("success", test.FailOnError(returnsNilError()).(string))
 }
 
 // the following are explicit tests on the implementation, not implicit tests

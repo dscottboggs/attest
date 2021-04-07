@@ -1,3 +1,9 @@
+/**
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package attest
 
 /* Attest is a very lightweight testing library aimed at improving the
@@ -141,13 +147,11 @@ func (t *Test) Equals(
 	} else {
 		t.Attest(
 			typeOf(var1) == typeOf(var2),
-			fmt.Sprintf(
-				"%#v of type %T didn't match the type of %#v, %T; so they can't be"+
-					" compared. ",
-				var1,
-				var1,
-				var2,
-				var2))
+			"%#v of type %T didn't match the type of %#v, %T; so they can't be compared. ",
+			var1,
+			var1,
+			var2,
+			var2)
 		t.Attest(
 			var1 == var2,
 			fmt.Sprintf(

@@ -1,3 +1,9 @@
+/**
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package attest
 
 import (
@@ -38,7 +44,7 @@ func TestAttestOrDo(t *testing.T) {
 }
 func TestNil(t *testing.T) {
 	test := Test{t}
-	test.Nil(nil)
+	test.Nil(nil, "attest.Test.Nil as failed an implicit test")
 }
 func TestNotNil(t *testing.T) {
 	test := Test{t}
