@@ -8,6 +8,7 @@ package attest
 
 import (
 	"log"
+	"regexp"
 	"testing"
 )
 
@@ -113,14 +114,14 @@ func TestNotEqual(t *testing.T) {
 
 func TestMatches(t *testing.T) {
 	test := Test{t}
-	var pattern = "foo.*"
+	var pattern = test.FailOnError(regexp.Compile("foo.*")).(*regexp.Regexp)
 	var value = "seafood"
 	test.Matches(pattern, value)
 }
 
 func TestDoesNotMatch(t *testing.T) {
 	test := Test{t}
-	var pattern = "doesn't match"
+	var pattern = test.FailOnError(regexp.Compile("doesn't match")).(*regexp.Regexp)
 	var value = "zxcvbn"
 	test.DoesNotMatch(pattern, value)
 }

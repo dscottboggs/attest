@@ -79,7 +79,6 @@ func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 		log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
 		t.FailNow()
 	}
-
 }
 
 // EatError accepts two values, the latter of which is a nillable error. If the
@@ -92,11 +91,9 @@ func (t *Test) EatError(value interface{}, err error) interface{} {
 	return value
 }
 
-// EatError accepts two values, the latter of which is a nillable error. If the
+// FailOnError accepts two values, the latter of which is a nillable error. If the
 // error is not nil, the test is failed immediately.
-func (t *Test) FailOnError(value interface{}, err error) interface{} {
-	if err != nil {
-		t.Errorf("When aquiring value %#v, got error %#v", value, err)
-	}
+func (t *Test) FailOnError(value interface{}, err error, msgAndFormat ...interface{}) interface{} {
+	t.StopIf(err, msgAndFormat...)
 	return value
 }
