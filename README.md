@@ -16,22 +16,24 @@ done!
 
 ## Usage:
 
-    package main
+```go
+  package main
 
-    import (
-        "testing"
+import (
+  "testing"
 
-        "github.com/dscottboggs/attest"
-    )
+  "github.com/dscottboggs/attest"
+)
 
-    func TestExample(t \*testing.T) {
-        test := attest.Test{t}
-        test.Attest(fmt.Sprintf("%T", "that something is true") == "string", "or %s a message", "log")
-        var val1, val2 int
-        test.Equals(val1, val2)
-        val2 = 1
-        test.Greater(val2, val1)
-    }
+func TestExample(t *testing.T) {
+  test := attest.Test{t}
+  test.Attest(fmt.Sprintf("%T", "that something is true") == "string", "or %s a message", "log")
+  var val1, val2 int
+  test.Equals(val1, val2)
+  val2 = 1
+  test.Greater(val2, val1)
+}
+```
 
 The implicit tests I use to perform testing on this package also serves as a great
 set of examples of its use. Unfortunately due to limitations in the Go testing
@@ -104,7 +106,7 @@ keystrokes when _writing_, but when reading back, the attest way is much
 easier to understand. Of course, you can mix-and-match:
 
 ```go
-func TestExample(t \*testing.T){
+func TestExample(t *testing.T){
   test := attest.New(t)
   if fmt.Sprintf("%T", "something is true") != "string" {
     test.Errorf("or %s a message", "log")
