@@ -147,3 +147,4 @@ In addition there are the following ways of handling error types and panics:
 - **AttestPanics** and **AttestNoPanic**: ensure the given function panics or doesn't.
 - **StopIf**: Log and fail a fatal non-nil error
 - **EatError**: Logs and fails an error message if the second argument is a non-nil error, and returns the first argument. For handling function calls that return a value and an error in a single line.
+- **FailOnError**: Like StopIf combined with EatError -- stops the test immediately if there is an error, otherwise returns the value.

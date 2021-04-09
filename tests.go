@@ -434,8 +434,7 @@ func (t *Test) Positive(variable interface{}, msgAndFmt ...interface{}) {
 			msgAndFmt[0].(string),
 			msgAndFmt[1:]...)
 	}
-	// can't use > on complex numbers for some reason.
-	// FIXME: implement GT/LT for complex64 and complex128
+	// can't use > on complex numbers because the set of complex numbers forms an unordered field
 }
 
 // Negative -- log a message and fail if variable is positive or zero.
@@ -487,8 +486,7 @@ func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 			msgAndFmt[0].(string),
 			msgAndFmt[1:]...)
 	}
-	// can't use > on complex numbers for some reason.
-	// FIXME: implement GT/LT for complex64 and complex128
+	// can't use < on complex numbers because the set of complex numbers forms an unordered field
 }
 
 // TypeIs fails the test if the type of the value does not match the typestring,
@@ -531,16 +529,8 @@ func (t *Test) TypeIsNot(typestring string, value interface{}, msgAndFmt ...inte
 }
 
 // Matches determines if value matches the regex pattern
-func (t *Test) Matches(pattern, value string, msgAndFmt ...interface{}) {
-	matched, err := regexp.MatchString(pattern, value)
-	if err != nil {
-		t.Errorf(
-			"couldn't match %v with pattern %v because %v",
-			value,
-			pattern,
-			err,
-		)
-	}
+func (t *Test) Matches(pattern *regexp.Regexp, value string, msgAndFmt ...interface{}) {
+	matched := pattern.MatchString(value)
 	if len(msgAndFmt) == 0 {
 		t.Attest(matched, "string %v didn't match pattern %v", value, pattern)
 	} else {
@@ -549,16 +539,8 @@ func (t *Test) Matches(pattern, value string, msgAndFmt ...interface{}) {
 }
 
 // DoesNotMatch inverts Matches
-func (t *Test) DoesNotMatch(pattern, value string, msgAndFmt ...interface{}) {
-	matched, err := regexp.MatchString(pattern, value)
-	if err != nil {
-		t.Errorf(
-			"couldn't match %v with pattern %v because %v",
-			value,
-			pattern,
-			err,
-		)
-	}
+func (t *Test) DoesNotMatch(pattern *regexp.Regexp, value string, msgAndFmt ...interface{}) {
+	matched := pattern.MatchString(value)
 	if len(msgAndFmt) == 0 {
 		t.AttestNot(
 			matched,
