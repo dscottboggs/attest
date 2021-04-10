@@ -7,7 +7,7 @@ import (
 )
 
 func Test_NewRecorder(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	rec, req := test.NewRecorder()
 	test.Equals("GET", req.Method)
 	test.Equals("/", req.URL.Path)
@@ -45,7 +45,7 @@ func Test_NewRecorder(t *testing.T) {
 	test.TypeIs("*httptest.ResponseRecorder", rec)
 }
 func Test_ResponseOK(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	rec, req := test.NewRecorder()
 	func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))

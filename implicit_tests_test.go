@@ -13,16 +13,16 @@ import (
 )
 
 func TestAttest(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.Attest(true, "attest.Test.Attest has failed an implicit test.")
 }
 func TestAttestNot(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.AttestNot(false, "attest.Test.AttestNot has failed an implicit test.")
 	test.Not(false, "attest.Test.Not has failed an implicit test.")
 }
 func TestEquals(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.Equals(
 		"attest.Test.Equals has failed an implicit test.",
 		"attest.Test.Equals has failed an implicit test.")
@@ -38,17 +38,17 @@ func TestDoesNotCompare(t *testing.T) {
 	test.NotSimilarTo(5, "var2")
 }
 func TestAttestOrDo(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.AttestOrDo(true, func(t *Test, args ...interface{}) {
 		log.Printf("attest.Test.AttestOrDo has failed an implicit test")
 	})
 }
 func TestNil(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.Nil(nil, "attest.Test.Nil as failed an implicit test")
 }
 func TestNotNil(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.NotNil(
 		"non-nil value",
 		"required message: %s",
@@ -56,7 +56,7 @@ func TestNotNil(t *testing.T) {
 	)
 }
 func TestGreaterThan(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.GreaterThan(1, 2)
 	test.GreaterThan(1.3, 2.5)
 	test.GreaterThan(int8(1), int8(2))
@@ -67,7 +67,7 @@ func TestGreaterThan(t *testing.T) {
 	test.GreaterThan(float64(1.3), float64(2.1))
 }
 func TestPositive(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.Positive(2)
 	test.Positive(2.5)
 	test.Positive(int8(2))
@@ -77,7 +77,7 @@ func TestPositive(t *testing.T) {
 	test.Positive(float32(2.1))
 }
 func TestNegative(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.Negative(-2)
 	test.Negative(-2.5)
 	test.Negative(int8(-2))
@@ -87,7 +87,7 @@ func TestNegative(t *testing.T) {
 	test.Negative(float32(-2.1))
 }
 func TestLessThan(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.LessThan(2, 1)
 	test.LessThan(2.5, 1.3)
 	test.LessThan(int8(2), int8(1))
@@ -99,7 +99,7 @@ func TestLessThan(t *testing.T) {
 }
 
 func TestNotEqual(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	var1 := "test var 1"
 	var2 := "test var 2"
 	test.NotEqual(
@@ -113,14 +113,14 @@ func TestNotEqual(t *testing.T) {
 }
 
 func TestMatches(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	var pattern = test.FailOnError(regexp.Compile("foo.*")).(*regexp.Regexp)
 	var value = "seafood"
 	test.Matches(pattern, value)
 }
 
 func TestDoesNotMatch(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	var pattern = test.FailOnError(regexp.Compile("doesn't match")).(*regexp.Regexp)
 	var value = "zxcvbn"
 	test.DoesNotMatch(pattern, value)

@@ -71,7 +71,7 @@ func (t *Test) ResponseOK(response *http.Response, msgAndFmt ...interface{}) {
 		message = fmt.Sprintf(msgAndFmt[0].(string), msgAndFmt[1:len(msgAndFmt)-1]...)
 	}
 	if response.StatusCode > 400 {
-		t.Errorf(
+		t.errorf(
 			"Got status %d: %s.\n%s",
 			response.StatusCode,
 			response.Status,

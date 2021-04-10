@@ -55,13 +55,13 @@ func (t *Test) Handle(err error, msgAndFmt ...interface{}) {
 	if err != nil {
 		switch msgAndFmt[0].(type) {
 		case string:
-			t.Errorf(msgAndFmt[0].(string), msgAndFmt[1:]...)
+			t.errorf(msgAndFmt[0].(string), msgAndFmt[1:]...)
 		case error:
-			t.Errorf(
+			t.errorf(
 				"WARNING! starting at attest version 1.0, use HandleMultiple to handle" +
 					"multiple error cases.")
 		default:
-			t.Errorf(
+			t.errorf(
 				"Got type %T for second argument to Test.Handle(). If more than one"+
 					"argument is specified, the second one MUST be a string.",
 				msgAndFmt[0])
@@ -86,7 +86,7 @@ func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 // returned through the function.
 func (t *Test) EatError(value interface{}, err error) interface{} {
 	if err != nil {
-		t.Errorf("When aquiring value %#v, got error %s (%#+v)", value, err.Error(), err)
+		t.errorf("When aquiring value %#v, got error %s (%#+v)", value, err.Error(), err)
 	}
 	return value
 }
