@@ -74,7 +74,7 @@ func (t *Test) Handle(err error, msgAndFmt ...interface{}) {
 func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 	if err != nil {
 		if len(msgAndFmt) == 0 {
-			msgAndFmt = []interface{}{"Fatal error: %#v", err}
+			msgAndFmt = []interface{}{"Fatal error: %s (%#+v)", err.Error(), err}
 		}
 		log.Printf(msgAndFmt[0].(string), msgAndFmt[1:]...)
 		t.FailNow()
@@ -86,7 +86,7 @@ func (t *Test) StopIf(err error, msgAndFmt ...interface{}) {
 // returned through the function.
 func (t *Test) EatError(value interface{}, err error) interface{} {
 	if err != nil {
-		t.Errorf("When aquiring value %#v, got error %#v", value, err)
+		t.Errorf("When aquiring value %#v, got error %s (%#+v)", value, err.Error(), err)
 	}
 	return value
 }
