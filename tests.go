@@ -98,6 +98,7 @@ package attest
  *  - **AttestPanics** and **AttestNoPanic**: ensure the given function panics or doesn't.
  *  - **StopIf**: Log and fail a fatal non-nil error
  *  - **EatError**: Logs and fails an error message if the second argument is a non-nil error, and returns the first argument. For handling function calls that return a value and an error in a single line.
+ *  - **FailOnError**: Fails with a given error message if the second argument is a non-nil error, otherwise returns the first argument.
  */
 
 import (
@@ -121,37 +122,35 @@ func NewTest(t *testing.T) Test {
 // Test -- A structure for containing methods and data for asserting and
 // testing assertion validity
 type Test struct {
+	hardFail bool
 	*testing.T
 }
 
-func typeOf(val interface{}) string {
+func typeOf[T any](val T) string {
 	return fmt.Sprintf("%T", val)
+}
+
+func (t *Test) fail() {
+	if t.hardFail {
+		t.FailNow()
+	} else {
+		t.Fail()
+	}
 }
 
 // Equals checks that var1 is deeply equal to var2. Optionally, you can pass an
 // additional string and additional string formatters to be passed to
 // Test.Attest. If no message is specified, a message will be logged simply
 // stating that the two values weren't equal.
-func (t *Test) Equals(
-	var1, var2 interface{}, msgAndFormatters ...interface{},
+func (t *Test) Equals[T comparable, U any](
+	var1, var2 T, msgAndFormatters ...U,
 ) {
 	if len(msgAndFormatters) > 0 {
-		t.Attest(
-			typeOf(var1) == typeOf(var2),
-			msgAndFormatters[0].(string),
-			msgAndFormatters[1:]...)
-		t.Attest(
+		 t.Attest(
 			var1 == var2,
 			msgAndFormatters[0].(string),
 			msgAndFormatters[1:]...)
 	} else {
-		t.Attest(
-			typeOf(var1) == typeOf(var2),
-			"%#v of type %T didn't match the type of %#v, %T; so they can't be compared. ",
-			var1,
-			var1,
-			var2,
-			var2)
 		t.Attest(
 			var1 == var2,
 			fmt.Sprintf(
@@ -169,66 +168,64 @@ func (t *Test) Equals(
 //
 // This works by converting all values to a string with fmt.Sprintf("%v", value)
 // before checking equality.
-func (t *Test) Compares(var1, var2 interface{}, msgAndFmt ...interface{}) {
-	t.Equals(fmt.Sprintf("%v", var1), fmt.Sprintf("%v", var2), msgAndFmt...)
+func (t *Test) Compares[T comparable, U any](var1, var2 T, msgAndFmt ...T) {
+	 t.Equals(fmt.Sprintf("%v", var1), fmt.Sprintf("%v", var2), msgAndFmt...)
 }
 
 // SimilarTo is a semantic mirror of "Compares".
-func (t *Test) SimilarTo(var1, var2 interface{}, msgAndFmt ...interface{}) {
-	t.Compares(var1, var2, msgAndFmt...)
+func (t *Test) SimilarTo[T comparable, U any](var1, var2 T, msgAndFmt ...U)  {
+	 t.Compares(var1, var2, msgAndFmt...)
 }
 
 // NotEqual fails the test if var1 equals var2, with the given message
 // and formatting.
-func (t *Test) NotEqual(var1, var2 interface{}, msgAndFmt ...interface{}) {
-	if typeOf(var1) != typeOf(var2) {
-		// types don't match, not equal by default.
-		return
-	}
+func (t *Test) NotEqual[T comparable, U any](var1, var2 T, msgAndFmt ...U)  {
 	if len(msgAndFmt) == 0 {
-		t.NotEqual(
+		 t.NotEqual(
 			var1,
 			var2,
 			"received equal values of %#+v, expected to not equal.",
 			var1,
 		)
+	} else {
+		 t.Attest(var1 != var2, msgAndFmt[0].(string), msgAndFmt[1:]...)
 	}
-	t.Attest(var1 != var2, msgAndFmt[0].(string), msgAndFmt[1:]...)
 }
 
 // DoesNotCompare does the opposite of Compares/SimilarTo, the same as
 // NotSimilarTo
-func (t *Test) DoesNotCompare(var1, var2 interface{}, msgAndFmt ...interface{}) {
+func (t *Test) DoesNotCompare[T comparable, U any](var1, var2 T, msgAndFmt ...U)  {
+	a, b := fmt.Sprintf("%v", var1), fmt.Sprintf("%v", var2)
 	if len(msgAndFmt) == 0 {
-		t.DoesNotCompare(
+		 t.NotEqual(
+			a,
+			b,
+			"%s (%#+v as a string) was attested to be similar to %s (string: %#+v)",
+			a,
 			var1,
-			var2,
-			"%#+v (%v as a string) was supposed to be similar to %#+v (string: %v)",
-			var1,
-			var1,
-			var2,
+			b,
 			var2,
 		)
 	} else {
-		t.NotEqual(fmt.Sprintf("%v", var1), fmt.Sprintf("%v", var2), msgAndFmt...)
+		 t.NotEqual(a, b, msgAndFmt...)
 	}
 }
 
 // NotSimilarTo does the opposite of Compares/SimilarTo, the same as
 // DoesNotCompare
-func (t *Test) NotSimilarTo(var1, var2 interface{}, msgAndFmt ...interface{}) {
-	t.DoesNotCompare(var1, var2, msgAndFmt...)
+func (t *Test) NotSimilarTo[T comparable, U any](var1, var2 T, msgAndFmt ...U)  {
+	 t.DoesNotCompare(var1, var2, msgAndFmt...)
 }
 
 // Attest that `that` is true, or log `message` and fail the test.
-func (t *Test) Attest(that bool, message string, formatters ...interface{}) {
+func (t *Test) Attest(that , message string, formatters ...interface{}) bool {
 	if !that {
 		if len(formatters) == 0 {
 			fmt.Println(message)
 		} else {
 			fmt.Printf(message+"\n", formatters...)
 		}
-		t.Fail()
+		t.fail()
 	}
 }
 
@@ -255,26 +252,26 @@ func (t *Test) AttestOrDo(that bool,
 ) {
 	if !that {
 		callback(t, cbArgs...)
-		t.Fail()
+		t.fail()
 	}
 }
 
 // Nil -- Log a message and fail if the variable is not nil
-func (t *Test) Nil(variable interface{}, msgAndFmt ...interface{}) {
+func (t *Test) Nil[T any](variable *T, msgAndFmt ...interface{}) {
 	var (
 		message string
 		format  []interface{}
 	)
 	if len(msgAndFmt) == 0 {
-		message = "%#+v was expected to be nil, but was not!"
-		format = make([]interface{}, 1)
-		format[0] = variable
+		t._nil(variable, "%#+v was expected to be nil, but was not!", variable)
 	} else if len(msgAndFmt) == 1 {
-		message = msgAndFmt[0].(string)
+		t._nil(variable, msgAndFmt[0].(string))
 	} else {
-		message = msgAndFmt[0].(string)
-		format = msgAndFmt[1:]
+		t._nil(variable, format...)
 	}
+}
+
+func (t *Test) _nil[T any](variable *T, message, ...format interface{}) {
 	t.Attest(
 		variable == nil,
 		message,
@@ -282,10 +279,9 @@ func (t *Test) Nil(variable interface{}, msgAndFmt ...interface{}) {
 }
 
 // NotNil --  Log a message and fail if the variable is nil. The explanatory
-// message is not optional for this function. If the explanatory message were
-// not provided, the default would be "nil was expected to not be nil" which
-// isn't very descriptive.
-func (t *Test) NotNil(variable interface{}, msg string, formatters ...interface{}) {
+// message is not optional for this function. The explanatory message is required
+// because no valuable information can be gathered from a nil reference.
+func (t *Test) NotNil[T any](variable *T, msg string, formatters ...interface{}) {
 	t.Attest(
 		variable != nil,
 		msg,
@@ -294,51 +290,21 @@ func (t *Test) NotNil(variable interface{}, msg string, formatters ...interface{
 
 // GreaterThan -- log a message and fail if the variable is less than the
 // expected value
-func (t *Test) GreaterThan(
+func (t *Test) GreaterThan[T comparable](
 	expected,
-	variable interface{},
+	variable T,
 	msgAndFmt ...interface{},
 ) {
-	defaultMessage := fmt.Sprintf(
-		"Value (%#v) was less than expected (%#v).",
-		variable,
-		expected)
-	msg := func() string {
+	msg := func() ...interface{} {
 		if len(msgAndFmt) == 0 {
-			return defaultMessage
+			return "Value (%#v) was less than or equal to the expected (%#v).",
+				variable,
+				expected
 		}
-		if len(msgAndFmt) == 1 {
-			return msgAndFmt[0].(string)
-		}
-		return fmt.Sprintf(msgAndFmt[0].(string), msgAndFmt[1:]...)
+		return msgAndFmt[0].(string), msgAndFmt[1:]...
 	}
-	switch variable.(type) {
-	default:
-		log.Printf(
-			"When trying check that %v was greater than %v, found non-numeric "+
-				"types %T and %T.",
-			expected,
-			variable,
-			expected,
-			variable)
-		t.Fail()
-	case int:
-		t.Attest(variable.(int) > expected.(int), msg())
-	case int8:
-		t.Attest(variable.(int8) > expected.(int8), msg())
-	case int16:
-		t.Attest(variable.(int16) > expected.(int16), msg())
-	case int32:
-		t.Attest(variable.(int32) > expected.(int32), msg())
-	case int64:
-		t.Attest(variable.(int64) > expected.(int64), msg())
-	case float32:
-		t.Attest(variable.(float32) > expected.(float32), msg())
-	case float64:
-		t.Attest(variable.(float64) > expected.(float64), msg())
-	}
-	// can't use > on complex numbers for some reason.
-	// FIXME: implement GT/LT for complex64 and complex128
+	t.Attest[T](expected > variable, msg()...)
+	// can't use > on complex numbers because the set of complex numbers forms an unordered field
 }
 
 // LessThan -- log a message and fail if variable is negative.
@@ -346,18 +312,14 @@ func (t *Test) LessThan(expected,
 	variable interface{},
 	msgAndFmt ...interface{},
 ) {
-	defaultMessage := fmt.Sprintf(
-		"Value (%#v) was greater than expected (%#v).",
-		variable,
-		expected)
-	msg := func() string {
+	
+	msg := func() ...interface{} {
 		if len(msgAndFmt) == 0 {
-			return defaultMessage
+			return "Value (%#v) was greater than or equal to the expected (%#v).",
+				variable,
+				expected
 		}
-		if len(msgAndFmt) == 1 {
-			return msgAndFmt[0].(string)
-		}
-		return fmt.Sprintf(msgAndFmt[0].(string), msgAndFmt[1:]...)
+		return msgAndFmt[0].(string), msgAndFmt[1:]...
 	}
 	switch variable.(type) {
 	default:
@@ -365,7 +327,7 @@ func (t *Test) LessThan(expected,
 			"Can't check value of %#v: check isn't implemented for type %T",
 			variable,
 			variable)
-		t.Fail()
+		t.fail()
 	case int:
 		t.Attest(variable.(int) < expected.(int), msg())
 	case int8:
@@ -381,8 +343,7 @@ func (t *Test) LessThan(expected,
 	case float64:
 		t.Attest(variable.(float64) < expected.(float64), msg())
 	}
-	// can't use > on complex numbers for some reason.
-	// FIXME: implement GT/LT for complex64 and complex128
+	// can't use > on complex numbers because the set of complex numbers forms an unordered field
 }
 
 // Positive -- log a message and fail if variable is negative or zero.
