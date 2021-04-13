@@ -108,7 +108,10 @@ import (
 )
 
 // New returns a new Test struct so that you don't get the linter complaining
-// about unkeyed struct literals when the value has no key
+// about unkeyed struct literals when the value has no key. This Test will
+// fail lazily by default; that is, it will continue with the test if an
+// assertion fails. This behavior can be toggled by calling .ImmediateFailure()
+// on the returned Test.
 func New(t *testing.T) Test {
 	return Test{false, t}
 }
@@ -118,6 +121,8 @@ func NewTest(t *testing.T) Test {
 	return New(t)
 }
 
+// NewImmediate returns a Test which will fail at the first error by default.
+// This can be toggled by calling .LazyFailure() on the returned Test.
 func NewImmediate(t *testing.T) Test {
 	return Test{true, t}
 }
