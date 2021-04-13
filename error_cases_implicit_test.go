@@ -11,7 +11,7 @@ import (
 )
 
 func TestAttestPanics(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.AttestPanics(
 		func(a ...interface{}) { panic(a[0].(string)) },
 		"test panic",
@@ -19,7 +19,7 @@ func TestAttestPanics(t *testing.T) {
 }
 
 func TestAttestNoPanic(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.AttestNoPanic(
 		func(a ...interface{}) { a[0] = a[1] },
 		"args for",
@@ -33,12 +33,12 @@ func returnsNilError() (string, error) {
 }
 
 func TestEatError(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.Equals("success", test.EatError(returnsNilError()).(string))
 }
 
 func TestFailOnError(t *testing.T) {
-	test := Test{t}
+	test := New(t)
 	test.Equals("success", test.FailOnError(returnsNilError()).(string))
 }
 

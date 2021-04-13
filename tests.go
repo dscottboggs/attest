@@ -108,24 +108,58 @@ import (
 )
 
 // New returns a new Test struct so that you don't get the linter complaining
-// about unkeyed struct literals when the value has no key
+// about unkeyed struct literals when the value has no key. This Test will
+// fail lazily by default; that is, it will continue with the test if an
+// assertion fails. This behavior can be toggled by calling .ImmediateFailure()
+// on the returned Test.
 func New(t *testing.T) Test {
-	return Test{t}
+	return Test{false, t}
 }
 
 // NewTest does the same thing as New
 func NewTest(t *testing.T) Test {
-	return Test{t}
+	return New(t)
+}
+
+// NewImmediate returns a Test which will fail at the first error by default.
+// This can be toggled by calling .LazyFailure() on the returned Test.
+func NewImmediate(t *testing.T) Test {
+	return Test{true, t}
 }
 
 // Test -- A structure for containing methods and data for asserting and
 // testing assertion validity
 type Test struct {
+	hardFail bool
 	*testing.T
 }
 
 func typeOf(val interface{}) string {
 	return fmt.Sprintf("%T", val)
+}
+
+func (t *Test) fail() {
+	if t.hardFail {
+		t.FailNow()
+	} else {
+		t.Fail()
+	}
+}
+
+func (t *Test) errorf(msg string, formatters ...interface{}) {
+	if t.hardFail {
+		t.Errorf(msg, formatters...)
+	} else {
+		t.Fatalf(msg, formatters...)
+	}
+}
+
+func (t *Test) ImmediateFailure() {
+	t.hardFail = true
+}
+
+func (t *Test) LazyFailure() {
+	t.hardFail = false
 }
 
 // Equals checks that var1 is deeply equal to var2. Optionally, you can pass an
@@ -228,7 +262,7 @@ func (t *Test) Attest(that bool, message string, formatters ...interface{}) {
 		} else {
 			fmt.Printf(message+"\n", formatters...)
 		}
-		t.Fail()
+		t.fail()
 	}
 }
 
@@ -255,7 +289,7 @@ func (t *Test) AttestOrDo(that bool,
 ) {
 	if !that {
 		callback(t, cbArgs...)
-		t.Fail()
+		t.fail()
 	}
 }
 
@@ -337,8 +371,7 @@ func (t *Test) GreaterThan(
 	case float64:
 		t.Attest(variable.(float64) > expected.(float64), msg())
 	}
-	// can't use > on complex numbers for some reason.
-	// FIXME: implement GT/LT for complex64 and complex128
+	// can't use > on complex numbers because the set of complex numbers forms an unordered field.
 }
 
 // LessThan -- log a message and fail if variable is negative.
@@ -381,8 +414,7 @@ func (t *Test) LessThan(expected,
 	case float64:
 		t.Attest(variable.(float64) < expected.(float64), msg())
 	}
-	// can't use > on complex numbers for some reason.
-	// FIXME: implement GT/LT for complex64 and complex128
+	// can't use > on complex numbers because the set of complex numbers forms an unordered field.
 }
 
 // Positive -- log a message and fail if variable is negative or zero.
@@ -397,7 +429,7 @@ func (t *Test) Positive(variable interface{}, msgAndFmt ...interface{}) {
 				"type %T",
 			variable,
 			variable)
-		t.Fail()
+		t.fail()
 	case int:
 		t.Attest(
 			variable.(int) > 0,
@@ -449,7 +481,7 @@ func (t *Test) Negative(variable interface{}, msgAndFmt ...interface{}) {
 				"type %T",
 			variable,
 			variable)
-		t.Fail()
+		t.fail()
 	case int:
 		t.Attest(
 			variable.(int) < 0,
@@ -505,7 +537,7 @@ func (t *Test) TypeIs(typestring string, value interface{}, msgAndFmt ...interfa
 		formatters = msgAndFmt[1:]
 	}
 	if fmt.Sprintf("%T", value) != typestring {
-		t.Errorf(message, formatters...)
+		t.errorf(message, formatters...)
 	}
 }
 
@@ -524,7 +556,7 @@ func (t *Test) TypeIsNot(typestring string, value interface{}, msgAndFmt ...inte
 		formatters = msgAndFmt[1:]
 	}
 	if fmt.Sprintf("%T", value) == typestring {
-		t.Errorf(message, formatters...)
+		t.errorf(message, formatters...)
 	}
 }
 
